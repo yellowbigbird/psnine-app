@@ -30,6 +30,12 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# IDE
+.idea/
+
+# Claude
+.claude/
+
 # local env files
 .env*.local
 
