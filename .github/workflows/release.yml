@@ -24,4 +24,4 @@ jobs:
 
       - run: npm ci
 
-      - run: eas build --platform all --profile production --non-interactive
+      - run: eas build --platform android --profile production --non-interactive
