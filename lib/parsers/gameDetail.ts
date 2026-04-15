@@ -51,54 +51,53 @@ export function parseGameDetail($: CheerioAPI, gameId: string): GameDetail {
 
   // Parse individual trophies
   const trophies: Trophy[] = [];
-  $(
-    'table.list tr, div.trophy, div.box table tr'
-  ).each((i, el) => {
+  $('table.list tr.trophy').each((i, el) => {
     const $el = $(el);
     const trophyText = $el.text();
 
-    // Get trophy icon
-    const iconImg = $el.find('img').first();
+    // Get trophy icon from first td
+    const iconImg = $el.find('td').first().find('img').first();
     const iconUrl = iconImg.attr('src') || '';
-    if (!iconUrl && !trophyText.includes('%')) return;
 
-    // Get trophy name - usually the first link text
-    const nameEl = $el.find('a').first();
+    // Get trophy name from the link in the second td (first link in the row wraps the icon)
+    const nameTd = $el.find('td').eq(1);
+    const nameEl = nameTd.find('a').first();
     const name = nameEl.text().trim();
     if (!name) return;
 
-    // Description - text content after the name
-    const description =
-      $el.find('em, .text-gray, .desc, td:nth-child(2)').text().trim() ||
-      '';
+    // Trophy detail URL
+    const trophyUrl = nameEl.attr('href') || '';
 
-    // Rarity percentage
-    const rarityMatch = trophyText.match(/([\d.]+)%/);
+    // Description from em.text-gray
+    const description = nameTd.find('em.text-gray').text().trim();
+
+    // Rarity percentage from the last td
+    const rarityTd = $el.find('td').last();
+    const rarityMatch = rarityTd.text().match(/([\d.]+)%/);
     const rarity = rarityMatch ? parseFloat(rarityMatch[1]) : 0;
 
     // Rarity label
     const rarityLabels = ['极为珍贵', '非常珍贵', '珍贵', '一般', '普通'];
     let rarityLabel = '一般';
     for (const label of rarityLabels) {
-      if (trophyText.includes(label)) {
+      if (rarityTd.text().includes(label)) {
         rarityLabel = label;
         break;
       }
     }
 
-    // Trophy type from icon or class
-    const typeClass = $el.attr('class') || '';
-    const imgAlt = iconImg.attr('alt') || '';
+    // Trophy type from first td class (t1=platinum, t2=gold, t3=silver, t4=bronze)
+    // or from the name link class (text-platinum, text-gold, text-silver, text-bronze)
+    const tdClass = $el.find('td').first().attr('class') || '';
+    const linkClass = nameEl.attr('class') || '';
     let type: Trophy['type'] = 'bronze';
-    if (/platinum|白金/.test(typeClass + imgAlt + trophyText)) type = 'platinum';
-    else if (/gold|金/.test(typeClass + imgAlt)) type = 'gold';
-    else if (/silver|银/.test(typeClass + imgAlt)) type = 'silver';
+    if (/\bt1\b/.test(tdClass) || /text-platinum/.test(linkClass)) type = 'platinum';
+    else if (/\bt2\b/.test(tdClass) || /text-gold/.test(linkClass)) type = 'gold';
+    else if (/\bt3\b/.test(tdClass) || /text-silver/.test(linkClass)) type = 'silver';
 
-    // Earned status
-    const earned =
-      $el.hasClass('earned') ||
-      $el.find('.earned, .green, .text-green').length > 0 ||
-      $el.find('img[src*="earned"]').length > 0;
+    // Earned status: earned trophies have a date in the third td
+    const earnedTd = $el.find('td').eq(2);
+    const earned = earnedTd.find('em').length > 0 && earnedTd.text().trim().length > 0;
 
     trophies.push({
       id: `${gameId}-${i}`,
@@ -109,6 +108,7 @@ export function parseGameDetail($: CheerioAPI, gameId: string): GameDetail {
       rarity,
       rarityLabel,
       earned,
+      url: trophyUrl ? absoluteUrl(trophyUrl) : undefined,
     });
   });
 

@@ -56,6 +56,7 @@ export interface Trophy {
   rarityLabel: string;
   earned: boolean;
   earnedDate?: string;
+  url?: string;
 }
 
 export interface GameDetail {
@@ -74,6 +75,28 @@ export interface GameDetail {
   difficulty?: string;
   trophies: Trophy[];
   dlcSections?: { name: string; trophies: Trophy[] }[];
+}
+
+export interface TrophyTip {
+  id: string;
+  authorName: string;
+  authorAvatar: string;
+  content: string;
+  timestamp: string;
+  location?: string;
+}
+
+export interface TrophyDetail {
+  id: string;
+  name: string;
+  description: string;
+  iconUrl: string;
+  type: Trophy['type'];
+  gameName: string;
+  gameId: string;
+  gameThumbnailUrl: string;
+  platform: string[];
+  tips: TrophyTip[];
 }
 
 export interface Comment {

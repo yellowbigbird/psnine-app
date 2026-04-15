@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import type { Trophy } from '../lib/types';
 import { useSettings } from '../hooks/useSettings';
 import { Spacing, FontSize } from '../constants/theme';
@@ -17,9 +18,21 @@ const typeColors: Record<Trophy['type'], string> = {
 
 export function TrophyCard({ trophy }: Props) {
   const { colors } = useSettings();
+  const router = useRouter();
+
+  const handlePress = () => {
+    // Extract trophy ID from URL like https://www.psnine.com/trophy/26546001
+    const match = trophy.url?.match(/\/trophy\/(\d+)/);
+    if (match) {
+      router.push(`/trophy/${match[1]}`);
+    }
+  };
 
   return (
-    <View
+    <TouchableOpacity
+      onPress={handlePress}
+      disabled={!trophy.url}
+      activeOpacity={0.7}
       style={[
         styles.container,
         {
@@ -59,7 +72,7 @@ export function TrophyCard({ trophy }: Props) {
           {trophy.rarityLabel}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
