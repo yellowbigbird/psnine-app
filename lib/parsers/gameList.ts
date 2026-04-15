@@ -55,10 +55,10 @@ export function parseGameCard(
   const difficultyMatch = text.match(/(极易|容易|普通|困难|极难|地狱)/);
   const difficulty = difficultyMatch ? difficultyMatch[1] : undefined;
 
-  // Completion rate
-  const completionMatch = text.match(/([\d.]+)%\s*完美|([\d.]+)%/);
-  const completionRate = completionMatch
-    ? parseFloat(completionMatch[1] || completionMatch[2])
+  // Completion rate - match percentage NOT followed by 完美 (which is the perfect rate)
+  const completionMatch = text.match(/([\d.]+)%(?!\s*完美)/);
+  let completionRate = completionMatch
+    ? parseFloat(completionMatch[1])
     : 0;
 
   // Perfect rate
@@ -86,6 +86,15 @@ export function parseGameCard(
   const totalTrophies = fractionMatch
     ? parseInt(fractionMatch[2])
     : earnedTrophies;
+
+  // If no explicit completion rate found, calculate from fraction
+  if (!completionRate && fractionMatch) {
+    const earned = parseInt(fractionMatch[1]);
+    const total = parseInt(fractionMatch[2]);
+    if (total > 0) {
+      completionRate = Math.round((earned / total) * 1000) / 10;
+    }
+  }
 
   return {
     id,

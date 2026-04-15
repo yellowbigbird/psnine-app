@@ -10,17 +10,16 @@ export function parseProfile($: CheerioAPI): UserProfile {
     $('img[onerror]').first().attr('src') ||
     '';
 
-  // PSN ID
+  // PSN ID - first td in psninfo table contains the PSN ID
   const psnId =
-    $('div.psninfo h1').text().trim() ||
-    $('span.psnid').text().trim() ||
-    $('title').text().split(' ')[0] || '';
+    $('div.psninfo td').first().text().trim() ||
+    $('title').text().replace(/[「」]/g, '').split('的')[0] || '';
 
   // Check Plus
   const isPlus = $('img[alt*="PLUS"], img[src*="plus"]').length > 0;
 
-  // Stats - parse from the profile box area
-  const statsText = $('div.box').first().text() || $('body').text();
+  // Stats - parse from the profile header area (div.psnzz contains all profile stats)
+  const statsText = $('div.psnzz').text() || $('body').text();
 
   // Level - "Lv XXX"
   const levelMatch = statsText.match(/Lv\s*(\d+)/);
