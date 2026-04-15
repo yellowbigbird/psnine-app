@@ -31,7 +31,11 @@ jobs:
 
       - run: eas build --platform android --profile production --local --non-interactive --output ./build.apk
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: ./build.apk
+      - name: Get tag name
+        id: tag
+        run: echo "name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK to GitHub Release
+        run: gh release upload "${{ steps.tag.outputs.name }}" ./build.apk#psnine-${{ steps.tag.outputs.name }}.apk --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
