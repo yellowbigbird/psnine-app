@@ -17,6 +17,11 @@ jobs:
           node-version: 20
           cache: npm
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
@@ -24,4 +29,9 @@ jobs:
 
       - run: npm ci
 
-      - run: eas build --platform android --profile production --non-interactive
+      - run: eas build --platform android --profile production --local --non-interactive --output ./build.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: ./build.apk
