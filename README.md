@@ -85,18 +85,34 @@ npm start
 - **iOS 模拟器** - 按 `i`
 - **Android 模拟器** - 按 `a`
 
-### Build Standalone App
+### Build APK Locally
 
 ```bash
 # 安装 EAS CLI
 npm install -g eas-cli
 
-# 构建 Android APK
-eas build --platform android --profile preview
+# 安装依赖
+npm install
 
-# 构建 iOS (需要 Apple Developer 账号)
-eas build --platform ios --profile preview
+# 本地构建 Android APK（不消耗 EAS 云端配额）
+eas build --platform android --profile production --local --output ./build.apk
 ```
+
+需要本地已安装 Java 17+ 和 Android SDK。
+
+### CI/CD
+
+- **PR → main**: 自动运行 TypeScript 类型检查 + Expo 编译验证
+- **Push tag**: 自动本地构建 APK 并上传到 GitHub Release Assets
+
+发布新版本：
+
+```bash
+git tag 0.0.8
+git push origin 0.0.8
+```
+
+然后在 GitHub 创建 Release 选择对应 tag，CI 会自动构建 APK 并附加到 Release 页面。
 
 ## Notes
 
