@@ -27,13 +27,24 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - run: npm ci
-
-      - run: eas build --platform android --profile production --local --non-interactive --output ./build.apk
-
       - name: Get tag name
         id: tag
         run: echo "name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Set version from tag
+        run: |
+          VERSION="${{ steps.tag.outputs.name }}"
+          VERSION="${VERSION#v}"
+          node -e "
+            const fs = require('fs');
+            const app = JSON.parse(fs.readFileSync('app.json'));
+            app.expo.version = '${VERSION}';
+            fs.writeFileSync('app.json', JSON.stringify(app, null, 2) + '\n');
+          "
+
+      - run: npm ci
+
+      - run: eas build --platform android --profile production --local --non-interactive --output ./build.apk
 
       - name: Upload APK to GitHub Release
         run: gh release upload "${{ steps.tag.outputs.name }}" ./build.apk#psnine-${{ steps.tag.outputs.name }}.apk --clobber

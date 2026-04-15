@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
+import Constants from 'expo-constants';
 import { useSettings } from '../../hooks/useSettings';
 import { Spacing, FontSize } from '../../constants/theme';
 
@@ -90,7 +91,7 @@ export default function SettingsScreen() {
       </View>
 
       <Text style={[styles.version, { color: colors.textSecondary }]}>
-        PSNine App v1.0.0
+        PSNine App v{Constants.expoConfig?.version ?? '0.0.0'}
       </Text>
     </View>
   );
