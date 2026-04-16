@@ -54,61 +54,61 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-ios:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Get tag name
-        id: tag
-        run: echo "name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-
-      - name: Set version from tag
-        run: |
-          VERSION="${{ steps.tag.outputs.name }}"
-          VERSION="${VERSION#v}"
-          node -e "
-            const fs = require('fs');
-            const app = JSON.parse(fs.readFileSync('app.json'));
-            app.expo.version = '${VERSION}';
-            fs.writeFileSync('app.json', JSON.stringify(app, null, 2) + '\n');
-          "
-
-      - run: npm ci
-
-      - name: Build iOS on EAS
-        id: ios_build
-        run: |
-          eas build --platform ios --profile production --non-interactive --wait --json > ios-build.json
-          node -e "
-            const fs = require('fs');
-            const raw = fs.readFileSync('ios-build.json', 'utf8').trim();
-            const data = JSON.parse(raw);
-            const build = Array.isArray(data) ? data[0] : data;
-            const artifactUrl =
-              build?.artifacts?.buildUrl ||
-              build?.artifacts?.applicationArchiveUrl;
-            if (!artifactUrl) {
-              console.error(raw);
-              throw new Error('Missing iOS artifact URL in EAS output');
-            }
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'artifact_url=' + artifactUrl + '\n');
-          "
-
-      - name: Download IPA
-        run: curl -L "${{ steps.ios_build.outputs.artifact_url }}" --output ./build.ipa
-
-      - name: Upload IPA to GitHub Release
-        run: gh release upload "${{ steps.tag.outputs.name }}" ./build.ipa#psnine-${{ steps.tag.outputs.name }}.ipa --clobber
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # build-ios:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: npm
+  #
+  #     - uses: expo/expo-github-action@v8
+  #       with:
+  #         eas-version: latest
+  #         token: ${{ secrets.EXPO_TOKEN }}
+  #
+  #     - name: Get tag name
+  #       id: tag
+  #       run: echo "name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+  #
+  #     - name: Set version from tag
+  #       run: |
+  #         VERSION="${{ steps.tag.outputs.name }}"
+  #         VERSION="${VERSION#v}"
+  #         node -e "
+  #           const fs = require('fs');
+  #           const app = JSON.parse(fs.readFileSync('app.json'));
+  #           app.expo.version = '${VERSION}';
+  #           fs.writeFileSync('app.json', JSON.stringify(app, null, 2) + '\n');
+  #         "
+  #
+  #     - run: npm ci
+  #
+  #     - name: Build iOS on EAS
+  #       id: ios_build
+  #       run: |
+  #         eas build --platform ios --profile production --non-interactive --wait --json > ios-build.json
+  #         node -e "
+  #           const fs = require('fs');
+  #           const raw = fs.readFileSync('ios-build.json', 'utf8').trim();
+  #           const data = JSON.parse(raw);
+  #           const build = Array.isArray(data) ? data[0] : data;
+  #           const artifactUrl =
+  #             build?.artifacts?.buildUrl ||
+  #             build?.artifacts?.applicationArchiveUrl;
+  #           if (!artifactUrl) {
+  #             console.error(raw);
+  #             throw new Error('Missing iOS artifact URL in EAS output');
+  #           }
+  #           fs.appendFileSync(process.env.GITHUB_OUTPUT, 'artifact_url=' + artifactUrl + '\n');
+  #         "
+  #
+  #     - name: Download IPA
+  #       run: curl -L "${{ steps.ios_build.outputs.artifact_url }}" --output ./build.ipa
+  #
+  #     - name: Upload IPA to GitHub Release
+  #       run: gh release upload "${{ steps.tag.outputs.name }}" ./build.ipa#psnine-${{ steps.tag.outputs.name }}.ipa --clobber
+  #       env:
+  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
