@@ -8,17 +8,25 @@ interface GameListParams {
   platform: PlatformFilter;
   sort: SortOrder;
   dlc: DlcFilter;
+  title: string;
 }
 
-export function useGameList({ psnId, platform, sort, dlc }: GameListParams) {
+export function useGameList({
+  psnId,
+  platform,
+  sort,
+  dlc,
+  title,
+}: GameListParams) {
   return useInfiniteQuery({
-    queryKey: ['gameList', psnId, platform, sort, dlc],
+    queryKey: ['gameList', psnId, platform, sort, dlc, title],
     queryFn: async ({ pageParam = 1 }) => {
       const params = new URLSearchParams();
       params.set('page', pageParam.toString());
       if (platform !== 'all') params.set('pf', platform);
       if (sort !== 'date') params.set('ob', sort);
       if (dlc !== 'all') params.set('dlc', dlc);
+      if (title) params.set('title', title);
 
       const $ = await fetchPage(
         `/psnid/${psnId}/psngame?${params.toString()}`

@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
+import {
+  View,
+  FlatList,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGameList } from '../../hooks/useGameList';
 import { useSettings } from '../../hooks/useSettings';
@@ -30,6 +37,8 @@ export default function GamesScreen() {
   const [platform, setPlatform] = useState<PlatformFilter>('all');
   const [sort, setSort] = useState<SortOrder>('date');
   const [dlc, setDlc] = useState<DlcFilter>('all');
+  const [query, setQuery] = useState('');
+  const [title, setTitle] = useState('');
 
   const {
     data,
@@ -39,10 +48,19 @@ export default function GamesScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useGameList({ psnId, platform, sort, dlc });
+  } = useGameList({ psnId, platform, sort, dlc, title });
 
   const games = data?.pages.flatMap((p) => p.games) ?? [];
   const totalGames = data?.pages[0]?.totalGames ?? 0;
+
+  const handleSearch = () => {
+    setTitle(query.trim());
+  };
+
+  const handleClearSearch = () => {
+    setQuery('');
+    setTitle('');
+  };
 
   if (isLoading) return <Loading text="加载游戏中..." />;
   if (error)
@@ -61,6 +79,49 @@ export default function GamesScreen() {
             <Text style={[styles.title, { color: colors.text }]}>
               游戏 ({totalGames})
             </Text>
+            <View style={styles.searchRow}>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.surface,
+                    color: colors.text,
+                    borderColor: colors.border,
+                  },
+                ]}
+                placeholder="搜索单个游戏..."
+                placeholderTextColor={colors.textSecondary}
+                value={query}
+                onChangeText={setQuery}
+                onSubmitEditing={handleSearch}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="search"
+              />
+              <TouchableOpacity
+                style={[styles.searchBtn, { backgroundColor: colors.primary }]}
+                onPress={handleSearch}
+              >
+                <Text style={styles.searchBtnText}>搜索</Text>
+              </TouchableOpacity>
+              {title ? (
+                <TouchableOpacity
+                  style={[styles.clearBtn, { borderColor: colors.border }]}
+                  onPress={handleClearSearch}
+                >
+                  <Text
+                    style={[styles.clearBtnText, { color: colors.textSecondary }]}
+                  >
+                    清空
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+            {title ? (
+              <Text style={[styles.searchHint, { color: colors.textSecondary }]}>
+                当前搜索：{title}
+              </Text>
+            ) : null}
             <FilterBar
               options={platformOptions}
               selected={platform}
@@ -87,7 +148,7 @@ export default function GamesScreen() {
         }
         ListEmptyComponent={
           <Text style={[styles.empty, { color: colors.textSecondary }]}>
-            暂无游戏
+            {title ? '未找到匹配的游戏' : '暂无游戏'}
           </Text>
         }
       />
@@ -103,6 +164,48 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.lg,
     marginTop: Spacing.md,
     marginBottom: Spacing.sm,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  input: {
+    flex: 1,
+    height: 44,
+    borderRadius: 10,
+    paddingHorizontal: Spacing.md,
+    borderWidth: 1,
+    fontSize: FontSize.md,
+  },
+  searchBtn: {
+    height: 44,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: 10,
+    justifyContent: 'center',
+  },
+  searchBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: FontSize.md,
+  },
+  clearBtn: {
+    height: 44,
+    paddingHorizontal: Spacing.md,
+    borderRadius: 10,
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  clearBtnText: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+  },
+  searchHint: {
+    marginLeft: Spacing.lg,
+    marginBottom: Spacing.xs,
+    fontSize: FontSize.sm,
   },
   loadingMore: {
     textAlign: 'center',
