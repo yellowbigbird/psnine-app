@@ -85,7 +85,7 @@ npm start
 - **iOS 模拟器** - 按 `i`
 - **Android 模拟器** - 按 `a`
 
-### Build APK Locally
+### Build Mobile Artifacts
 
 ```bash
 # 安装 EAS CLI
@@ -96,14 +96,19 @@ npm install
 
 # 本地构建 Android APK（不消耗 EAS 云端配额）
 eas build --platform android --profile production --local --output ./build.apk
+
+# 云端构建 iOS IPA
+eas build --platform ios --profile production
 ```
 
-需要本地已安装 Java 17+ 和 Android SDK。
+Android 本地构建需要已安装 Java 17+ 和 Android SDK。
+
+iOS 构建依赖 EAS 云端构建与 Apple Developer 凭证。首次启用前，需要在 Expo / EAS 中完成 iOS 签名配置。
 
 ### CI/CD
 
 - **PR → main**: 自动运行 TypeScript 类型检查 + Expo 编译验证
-- **Push tag**: 自动本地构建 APK 并上传到 GitHub Release Assets
+- **Push tag**: 自动本地构建 Android APK，并通过 EAS 云端构建 iOS IPA，随后一起上传到 GitHub Release Assets
 
 发布新版本：
 
@@ -112,7 +117,7 @@ git tag 0.0.8
 git push origin 0.0.8
 ```
 
-然后在 GitHub 创建 Release 选择对应 tag，CI 会自动构建 APK 并附加到 Release 页面。
+然后在 GitHub 创建 Release 选择对应 tag，CI 会自动构建 APK / IPA 并附加到 Release 页面。
 
 ## Notes
 
